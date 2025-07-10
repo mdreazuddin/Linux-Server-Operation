@@ -96,6 +96,24 @@ fi
 * * * * * sleep 50 && /usr/local/bin/vip_ha.sh
 ```
 
+**Optinal** But recommended
+Run the following commands on both servers (DC and DR):
+
+adding this to /etc/sysctl.conf:
+
+```
+# Required for Virtual IP ARP behavior
+net.ipv4.conf.eth0.arp_ignore = 1
+net.ipv4.conf.eth0.arp_announce = 2
+net.ipv4.conf.all.arp_ignore = 1
+net.ipv4.conf.all.arp_announce = 2
+net.ipv4.conf.eth0.proxy_arp = 1
+```
+
+**Apply sysctl changes:**
+
+`sysctl -p`
+
 ***What Happens Internally***
 - DC checks internet/local health (CHECK_IP).
 - If healthy → ensures VIP is bound.
@@ -105,6 +123,10 @@ fi
 - If DC is back → DR drops VIP, DC will reassign.
 
 ***Test Cases or Verify***
+
+`ping 192.168.50.100`
+`arp -an | grep 192.168.50.100`
+`curl http://192.168.50.100`
 
 - Start both servers, DC gets the VIP.
 - Shutdown DC → DR gets VIP after few seconds.
